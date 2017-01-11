@@ -1,1 +1,1 @@
-# machine-statistics
+# Machine Statistics
