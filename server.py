@@ -65,11 +65,11 @@ class Client(object):
 
     def send_client_script(self):
         sftp = SFTPClient.from_transport(self.client)
-        sftp.put('client.py', 'client.py')
+        sftp.put('client.py', '/tmp/client.py')
 
     def execute_client_script(self):
         session = self.client.open_channel(kind='session')
-        session.exec_command('python client.py')
+        session.exec_command('python /tmp/client.py')
 
         while True:
             if session.exit_status_ready():
