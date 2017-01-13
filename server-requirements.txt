@@ -1,0 +1,4 @@
+paramiko==2.1.1
+pycrypto==2.6.1
+MySQL-Python==1.2.5
+SQLAlchemy==1.1.4
