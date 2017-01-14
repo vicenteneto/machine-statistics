@@ -48,23 +48,21 @@ class File(object):
 execution_date = datetime.utcnow()
 cpu_percent = psutil.cpu_percent(interval=1)
 virtual_memory = psutil.virtual_memory()
-disk_partitions = psutil.disk_partitions()
+partitions = psutil.disk_partitions()
 uptime = psutil.boot_time()
 
-disk_usage = dict()
-for partition in disk_partitions:
+disk_partitions = list()
+for partition in partitions:
     usage = psutil.disk_usage(partition.mountpoint)
-    disk_usage[partition.mountpoint] = {'used': usage.used, 'percent': usage.percent}
+    disk_partitions.append({'mountpoint': partition.mountpoint, 'used': usage.used, 'percent': usage.percent})
 
 metrics = {
     'execution_date': execution_date,
-    'cpu': cpu_percent,
-    'memory': {
-        'used': virtual_memory.used,
-        'percent': virtual_memory.percent
-    },
-    'disk': disk_usage,
-    'uptime': uptime
+    'cpu_percent': cpu_percent,
+    'memory_used': virtual_memory.used,
+    'memory_percent': virtual_memory.percent,
+    'disk_partitions': disk_partitions,
+    'uptime': datetime.fromtimestamp(uptime)
 }
 
 with open('/tmp/client_data.json', 'wb') as data_file:
