@@ -45,7 +45,9 @@ if clients is not None:
         if all(parameter in client_element.attrib for parameter in CLIENT_PARAMETERS):
             client = Client.from_element(client_element)
 
-            client.load_or_create(sql_session)
+            if sql_session:
+                client.load_or_create(sql_session)
+
             client.connect()
             client.send_client_script()
             client.execute_client_script()
@@ -53,6 +55,8 @@ if clients is not None:
             client.decrypt_client_data()
             client_data = client.load_client_data()
             metric = client.save_client_data(sql_session, client_data)
-            client.send_metric_notifications(metric, smtp_server)
+
+            if smtp_server:
+                client.send_metric_notifications(metric, smtp_server)
 
             client.close()

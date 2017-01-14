@@ -189,8 +189,10 @@ class Client(Base):
             metric.client_id = self.client_id
         instances.append(metric)
         instances.extend(disks)
-        session.add_all(instances)
-        session.commit()
+
+        if session:
+            session.add_all(instances)
+            session.commit()
 
         return metric
 

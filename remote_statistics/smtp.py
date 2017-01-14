@@ -9,11 +9,14 @@ class SMTPError(Exception):
 
 
 class SMTP(object):
-    def __init__(self, host, port, user, password):
+    def __init__(self, host='', port=0, user=None, password=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         try:
             self.user = user
-            self.server = smtplib.SMTP_SSL(host, port)
-            self.server.login(user, password)
+            self.server = smtplib.SMTP_SSL(host, port, timeout=timeout)
+
+            if user and password:
+                self.server.login(user, password)
+
             logging.info('SMTP server configured with success!')
         except socket.gaierror as error:
             logging.error('%s (%s).', error, host if port is None else '%s:%s' % (host, port))
@@ -21,7 +24,7 @@ class SMTP(object):
         except socket.error as error:
             logging.error('%s (%s:%s).', error, host, port)
             raise SMTPError()
-        except (smtplib.SMTPConnectError, smtplib.SMTPAuthenticationError) as error:
+        except (smtplib.SMTPConnectError, smtplib.SMTPAuthenticationError, smtplib.SMTPServerDisconnected) as error:
             logging.error(error)
             raise SMTPError()
 
@@ -33,13 +36,8 @@ class SMTP(object):
             msg['To'] = to
 
             self.server.sendmail(self.user, [to], msg.as_string())
-        except smtplib.SMTPHeloError as error:
-            logging.error(error)
-        except smtplib.SMTPRecipientsRefused as error:
-            logging.error(error)
-        except smtplib.SMTPSenderRefused as error:
-            logging.error(error)
-        except smtplib.SMTPDataError as error:
+        except (smtplib.SMTPHeloError, smtplib.SMTPRecipientsRefused, smtplib.SMTPSenderRefused,
+                smtplib.SMTPDataError) as error:
             logging.error(error)
 
     @staticmethod
