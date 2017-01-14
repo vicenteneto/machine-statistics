@@ -19,7 +19,7 @@ class File(object):
 
     def __init__(self, name, mode):
         if name.endswith('.enc'):
-            raise ValueError('name cannot ends with ".enc"')
+            raise ValueError('Name cannot ends with ".enc"')
         self.file = open(name, mode)
 
     def __enter__(self):
@@ -48,8 +48,8 @@ class File(object):
 execution_date = datetime.utcnow()
 cpu_percent = psutil.cpu_percent(interval=1)
 virtual_memory = psutil.virtual_memory()
-partitions = psutil.disk_partitions()
 uptime = psutil.boot_time()
+partitions = psutil.disk_partitions()
 
 disk_partitions = list()
 for partition in partitions:
@@ -61,8 +61,8 @@ metrics = {
     'cpu_percent': cpu_percent,
     'memory_used': virtual_memory.used,
     'memory_percent': virtual_memory.percent,
-    'disk_partitions': disk_partitions,
-    'uptime': datetime.fromtimestamp(uptime)
+    'uptime': uptime,
+    'disk_partitions': disk_partitions
 }
 
 with open('/tmp/client_data.json', 'wb') as data_file:

@@ -52,6 +52,7 @@ if clients is not None:
             client.get_client_data()
             client.decrypt_client_data()
             client_data = client.load_client_data()
-            client.save_client_data(sql_session, client_data)
+            metric = client.save_client_data(sql_session, client_data)
+            client.send_metric_notifications(metric, smtp_server)
 
             client.close()

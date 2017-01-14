@@ -18,6 +18,18 @@ class Alert(object):
     def __init__(self, type_, limit):
         self.type = type_
         self.limit = limit
+        self.use_percentage = False
+
+    def is_valid_limit(self):
+        if self.limit.endswith('%'):
+            self.use_percentage = True
+            self.limit = self.limit[:-1]
+
+        try:
+            self.limit = float(self.limit)
+            return True
+        except ValueError:
+            return False
 
     @staticmethod
     def from_element(element):
@@ -43,8 +55,48 @@ class Metric(Base):
     cpu_percent = Column(Float, nullable=False)
     memory_used = Column(BigInteger, nullable=False)
     memory_percent = Column(Float, nullable=False)
-    uptime = Column(DateTime, nullable=False)
+    uptime = Column(BigInteger, nullable=False)
     disks = relationship(DiskMetric, primaryjoin=metric_id.__eq__(DiskMetric.metric_id))
+
+    def analyze_cpu_percent(self, value):
+        return self.cpu_percent > value
+
+    def analyze_memory(self, value):
+        return self.memory_used > value
+
+    def analyze_memory_percent(self, value):
+        return self.memory_percent > value
+
+    def analyze_uptime(self, time):
+        return self.uptime > time
+
+    def analyze_disks(self, value):
+        return bool([disk for disk in self.disks if disk.used > value])
+
+    def analyze_disks_percent(self, value):
+        return bool([disk for disk in self.disks if disk.percent > value])
+
+    def create_mail_message(self, client, alert):
+        attributes = {
+            'cpu': self.cpu_percent,
+            'memory': {
+                'used': self.memory_used,
+                'percentage': self.memory_percent,
+            },
+            'uptime': self.uptime
+        }
+
+        base_message = 'Host %s on alert:\n'
+        if alert.type in attributes:
+            attribute = attributes[alert.type]
+
+            if isinstance(attribute, dict):
+                attribute = attribute['percentage'] if alert.use_percentage else attribute['used']
+
+            return (base_message + 'Maximum desired %s usage: %s\nCurrent %s usage: %s') % \
+                   (client.ip, alert.type, alert.limit, alert.type, attribute)
+        else:
+            return base_message
 
 
 class Client(Base):
@@ -67,7 +119,8 @@ class Client(Base):
 
     @staticmethod
     def from_element(element):
-        return Client(element.get('ip'), int(element.get('port', 22)), element.get('username'), element.get('password'),
+        return Client(element.get('ip'), int(element.get('port', 22)), element.get('username'),
+                      element.get('password'),
                       element.get('mail', None), list(element))
 
     def __create_client_data_file_name(self):
@@ -81,6 +134,7 @@ class Client(Base):
             session.commit()
         else:
             self.client_id = client_db.client_id
+            self.metrics = client_db.metrics
 
     def connect(self):
         self.transport = Transport((self.ip, self.port))
@@ -138,6 +192,35 @@ class Client(Base):
         session.add_all(instances)
         session.commit()
 
+        return metric
+
+    def send_metric_notifications(self, metric, smtp_server):
+        validate_alert_functions = {
+            'cpu': {
+                'percentage': metric.analyze_cpu_percent
+            },
+            'memory': {
+                'used': metric.analyze_memory,
+                'percentage': metric.analyze_memory_percent,
+            },
+            'uptime': metric.analyze_uptime,
+            'disk': {
+                'used': metric.analyze_disks,
+                'percentage': metric.analyze_disks_percent
+            }
+        }
+
+        for alert in self.alerts:
+            if alert.is_valid_limit() and alert.type in validate_alert_functions:
+                validate_func = validate_alert_functions[alert.type]
+
+                if isinstance(validate_func, dict):
+                    validate_func = validate_func['percentage'] if alert.use_percentage else validate_func['used']
+
+                if validate_func(alert.limit):
+                    message = metric.create_mail_message(self, alert)
+                    smtp_server.send_email('Remote machine on alert!', self.mail, message)
+
     def close(self):
         self.transport.close()
 
@@ -162,7 +245,9 @@ class Channel(object):
 
 
 class Transport(paramiko.Transport):
-    def open_multi_commands_channel(self, kind, dest_addr=None, src_addr=None, window_size=None, max_packet_size=None,
+    def open_multi_commands_channel(self, kind, dest_addr=None, src_addr=None, window_size=None,
+                                    max_packet_size=None,
                                     timeout=None):
-        session = super(Transport, self).open_channel(kind, dest_addr, src_addr, window_size, max_packet_size, timeout)
+        session = super(Transport, self).open_channel(kind, dest_addr, src_addr, window_size, max_packet_size,
+                                                      timeout)
         return Channel(session)

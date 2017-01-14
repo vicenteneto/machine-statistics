@@ -1,6 +1,7 @@
 import logging
 import smtplib
 import socket
+from email.mime.text import MIMEText
 
 
 class SMTPError(Exception):
@@ -24,9 +25,14 @@ class SMTP(object):
             logging.error(error)
             raise SMTPError()
 
-    def send_email(self, to, message):
+    def send_email(self, subject, to, message):
         try:
-            self.server.sendmail(self.user, [to], message)
+            msg = MIMEText(message)
+            msg['Subject'] = subject
+            msg['From'] = self.user
+            msg['To'] = to
+
+            self.server.sendmail(self.user, [to], msg.as_string())
         except smtplib.SMTPHeloError as error:
             logging.error(error)
         except smtplib.SMTPRecipientsRefused as error:
