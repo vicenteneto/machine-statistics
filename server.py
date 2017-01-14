@@ -14,13 +14,10 @@ design the database table yourself.
 the client configured email address using SMTP. Use a simple text mail format with some detail about the alert. event
 logs must be sent via email every time without any condition.
 """
-import errno
 import logging
-import sys
-from xml.etree import ElementTree
-from xml.etree.ElementTree import ParseError
 
-from remote_statistics.database import Session
+from remote_statistics import load_configuration
+from remote_statistics.database import Session, SessionError
 from remote_statistics.models import Client
 from remote_statistics.smtp import SMTP, SMTPError
 
@@ -29,26 +26,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 CLIENT_PARAMETERS = ('ip', 'username', 'password')
 CONFIG_FILE = 'config.xml'
 
+database, smtp, clients = load_configuration(CONFIG_FILE)
 
-def get_config_root():
-    try:
-        tree = ElementTree.parse(CONFIG_FILE)
-        logging.info('Configuration file loaded with success!')
-        return tree.getroot()
-    except IOError as error:
-        logging.error('%s. Configuration file does not found. Terminating program.', error)
-        sys.exit(errno.ENOENT)
-    except ParseError as error:
-        logging.error('%s. Bad configuration file format. Terminating program', error)
-        sys.exit(errno.EBFONT)
-
-
-config_root = get_config_root()
-database = config_root.find('database')
-smtp = config_root.find('smtp')
-clients = config_root.find('clients')
-
-sql_session = Session.from_config_element(database)
+sql_session = None
+try:
+    sql_session = Session.from_config_element(database)
+except SessionError as error:
+    pass
 
 smtp_server = None
 try:

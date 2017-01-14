@@ -7,6 +7,10 @@ from sqlalchemy.orm.session import sessionmaker
 from remote_statistics.models import Base
 
 
+class SessionError(Exception):
+    pass
+
+
 class Session(object):
     @staticmethod
     def from_config_element(database_config):
@@ -28,12 +32,12 @@ class Session(object):
 
         engine = create_engine(url.URL('mysql', username, password, host, port, database_name))
 
-        session = None
         try:
             Base.metadata.create_all(engine)
             session = sessionmaker(bind=engine)()
             logging.info('MySQL session configured with success!')
         except OperationalError as error:
             logging.error('%s', error)
+            raise SessionError()
 
         return session
