@@ -17,10 +17,10 @@ from Crypto.Cipher import AES
 class File(object):
     KEY = b'\xbf\xc0\x85)\x10nc\x94\x02)j\xdf\xcb\xc4\x94\x9d(\x9e[EX\xc8\xd5\xbfI{\xa2$\x05(\xd5\x18'
 
-    def __init__(self, name, mode):
+    def __init__(self, name):
         if name.endswith('.enc'):
             raise ValueError('Name cannot ends with ".enc"')
-        self.file = open(name, mode)
+        self.file = open(name, 'rb')
 
     def __enter__(self):
         return self
@@ -68,5 +68,5 @@ metrics = {
 with open('/tmp/client_data.json', 'wb') as data_file:
     pickle.dump(metrics, data_file)
 
-with File('/tmp/client_data.json', 'rb') as data_file:
+with File('/tmp/client_data.json') as data_file:
     data_file.encrypt()

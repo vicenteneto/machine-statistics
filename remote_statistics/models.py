@@ -142,7 +142,7 @@ class Client(Base):
 
     def send_client_script(self):
         sftp = SFTPClient.from_transport(self.transport)
-        sftp.put('client.py', '/tmp/client.py')
+        sftp.put('remote_statistics/client.py', '/tmp/client.py')
         sftp.put('requirements/client-requirements.txt', '/tmp/requirements.txt')
 
     def execute_client_script(self):
