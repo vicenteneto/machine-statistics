@@ -15,6 +15,12 @@ from Crypto.Cipher import AES
 
 
 class File(object):
+    """
+    An built-in File object wrapper that provides the remote_statistics encrypt function. The built-in File object
+    created is accessible using the file attribute.
+
+    The filename argument must can not end with .enc, otherwise and ValueError is raised.
+    """
     KEY = b'\xbf\xc0\x85)\x10nc\x94\x02)j\xdf\xcb\xc4\x94\x9d(\x9e[EX\xc8\xd5\xbfI{\xa2$\x05(\xd5\x18'
 
     def __init__(self, name):
