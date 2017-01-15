@@ -1,13 +1,2 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-
 # PyCharm
 .idea/
-
-# Virtualenv
-pyEnv/
-
-# Coverage
-.coverage
-coverage.xml

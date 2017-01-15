@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <config>
-    <database host="localhost" port="3306" username="root" password="password" database="machine_statistics"/>
-    <smtp host="smtp.gmail.com" port="465" user="email@gmail.com" password="password"/>
+    <database host="localhost" port="3306" username="root" password="6esncj4m" database="machine_statistics"/>
+    <smtp host="smtp.gmail.com" port="465" user="sneto.vicente.apps@gmail.com" password="6esncj4m"/>
     <clients>
-        <client ip="192.168.25.7" port="22" username="vicente" password="password" mail="email@gmail.com">
+        <client ip="192.168.25.7" port="22" username="vicente" password="6esncj4m" mail="sneto.vicente.apps@gmail.com">
             <alert type="memory" limit="50%"/>
             <alert type="cpu" limit="20%"/>
             <alert type="uptime" limit="10"/>
