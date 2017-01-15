@@ -4,7 +4,8 @@
 sudo apt-get install -y autotools-dev blt-dev bzip2 dpkg-dev g++-multilib gcc-multilib libbluetooth-dev libbz2-dev \
 libexpat1-dev libffi-dev libffi6 libffi6-dbg libgdbm-dev libgpm2 libncursesw5-dev libreadline-dev libsqlite3-dev \
 libssl-dev libtinfo-dev mime-support net-tools netbase python-crypto python-mox3 python-pil python-ply quilt tk-dev \
-zlib1g-dev
+zlib1g-dev libpq-dev python-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev python-virtualenv
+
 
 
 if [ ! -d "/usr/local/lib/python2.7.13" ]; then
