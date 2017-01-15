@@ -52,6 +52,13 @@ class File(object):
 
 
 class MachineStatistics(object):
+    """
+    This class is used to collect remote machine statics, such as uptime, CPU, memory and disk partitions usage.
+
+    The collect statics methods are: collect_cpu_usage(), collect_memory_usage(), collect_uptime() and
+    collect_disks_usage().
+    """
+
     def __init__(self):
         self.execution_date = datetime.utcnow()
         self.cpu_percent = None
