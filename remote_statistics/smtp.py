@@ -5,10 +5,29 @@ from email.mime.text import MIMEText
 
 
 class SMTPError(Exception):
-    pass
+    """
+    This exception is raised if:
+        (i) timeout expires,
+        (ii) network unreachable,
+        (iii) error establishing connection with the server,
+        (iv) wrong username/password combination provided and
+        (v) the server unexpectedly disconnects
+    """
 
 
 class SMTP(object):
+    """
+    An SMTP instance encapsulates an SMTP_SSL server connection created using the host, port and timeout arguments
+    provided. If the optional host and port arguments are given, the SMTP_SSL login() method is called with those
+    parameters during initialization. If any error occur during initialization, an SMTPError is raised.
+
+    For normal use, you should only require the instantiation and send_email() methods.
+
+    Also, you can instantiate this class, passing to the from_config_element method an xml.tree.ElementTree
+    configuration on the following format:
+        <smtp host="smtp.server.com" port="465" user="user@server.com" password="password"/>
+    """
+
     def __init__(self, host='', port=0, user=None, password=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
         try:
             self.user = user
