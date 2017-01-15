@@ -22,8 +22,9 @@ class TestSMTP(TestCase):
         with patch('smtplib.SMTP_SSL'):
             SMTP(host='smtp.google.com', port=465, user='valid-user', password='correct-password')
 
-    def test_instantiate_from_config_element__invalid_element__none(self):
-        self.assertIsNone(SMTP.from_config_element(None))
+    def test_instantiate_from_config_element__invalid_element__smtp_error(self):
+        with self.assertRaises(SMTPError):
+            self.assertIsNone(SMTP.from_config_element(None))
 
     def test_send_email(self):
         with patch('smtplib.SMTP_SSL'):
