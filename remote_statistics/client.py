@@ -45,28 +45,41 @@ class File(object):
             enc_file.write(cipher_text)
 
 
-execution_date = datetime.utcnow()
-cpu_percent = psutil.cpu_percent(interval=1)
-virtual_memory = psutil.virtual_memory()
-uptime = psutil.boot_time()
-partitions = psutil.disk_partitions()
+class MachineStatistics(object):
+    def __init__(self):
+        self.execution_date = datetime.utcnow()
+        self.cpu_percent = None
+        self.memory_used = None
+        self.memory_percent = None
+        self.uptime = None
+        self.disk_partitions = list()
 
-disk_partitions = list()
-for partition in partitions:
-    usage = psutil.disk_usage(partition.mountpoint)
-    disk_partitions.append({'mountpoint': partition.mountpoint, 'used': usage.used, 'percent': usage.percent})
+    def collect_cpu_usage(self):
+        self.cpu_percent = psutil.cpu_percent(interval=1)
 
-metrics = {
-    'execution_date': execution_date,
-    'cpu_percent': cpu_percent,
-    'memory_used': virtual_memory.used,
-    'memory_percent': virtual_memory.percent,
-    'uptime': uptime,
-    'disk_partitions': disk_partitions
-}
+    def collect_memory_usage(self):
+        virtual_memory = psutil.virtual_memory()
+        self.memory_used = virtual_memory.used
+        self.memory_percent = virtual_memory.percent
+
+    def collect_uptime(self):
+        self.uptime = psutil.boot_time()
+
+    def collect_disks_usage(self):
+        for partition in psutil.disk_partitions():
+            usage = psutil.disk_usage(partition.mountpoint)
+            partition_usage = {'mountpoint': partition.mountpoint, 'used': usage.used, 'percent': usage.percent}
+            self.disk_partitions.append(partition_usage)
+
+
+statistics = MachineStatistics()
+statistics.collect_cpu_usage()
+statistics.collect_memory_usage()
+statistics.collect_uptime()
+statistics.collect_disks_usage()
 
 with open('/tmp/client_data.json', 'wb') as data_file:
-    pickle.dump(metrics, data_file)
+    pickle.dump(statistics.__dict__, data_file)
 
 with File('/tmp/client_data.json') as data_file:
     data_file.encrypt()
