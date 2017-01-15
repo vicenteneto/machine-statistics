@@ -63,7 +63,7 @@ class SMTP(object):
     def from_config_element(smtp_config):
         if smtp_config is None:
             logging.warning('SMTP configuration element does not found!')
-            return None
+            raise SMTPError()
 
         logging.info('SMTP configuration element found!')
 

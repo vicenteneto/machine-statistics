@@ -8,15 +8,25 @@ from remote_statistics.models import Base
 
 
 class SessionError(Exception):
-    pass
+    """
+    This exception is raised if the SQLAlchemy create_all or sessionmaker functions raises an OperationalError.
+    """
 
 
 class Session(object):
+    """
+    An Session instance encapsulates an SQLAlchemy session object.
+
+    You can instantiate this class, passing to the from_config_element method an xml.tree.ElementTree configuration on
+    the following format:
+        <database host="localhost" port="3306" username="root" password="password" database="db_name"/>
+    """
+
     @staticmethod
     def from_config_element(database_config):
         if database_config is None:
             logging.warning('MySQL configuration element does not found!')
-            return None
+            raise SessionError()
 
         logging.info('MySQL configuration element found!')
 
@@ -28,7 +38,7 @@ class Session(object):
 
         if not database_name:
             logging.info('Database name does not found on MySQL configuration')
-            return None
+            raise SessionError()
 
         engine = create_engine(url.URL('mysql', username, password, host, port, database_name))
 
